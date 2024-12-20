@@ -27,7 +27,7 @@ func (s stack) Get() string {
 
 
 func CheckExpression(expression string) (error) {
-	matched, err := regexp.MatchString(`^[\d+\-*/]+$`, expression)
+	matched, err := regexp.MatchString(`()^[\d+\-*/()]+$`, expression)
 	if err != nil || !matched {
 		err = fmt.Errorf("Incorrect expression")
 	}
