@@ -2,10 +2,10 @@ package calculator
 
 import (
 	"errors"
-	"strings"
-    "strconv"
 	"fmt"
 	"regexp"
+	"strconv"
+	"strings"
 )
 
 // stack realization
@@ -25,9 +25,8 @@ func (s stack) Get() string {
 	return s[l-1]
 }
 
-
-func CheckExpression(expression string) (error) {
-	matched, err := regexp.MatchString(`()^[\d+\-*/()]+$`, expression)
+func CheckExpression(expression string) error {
+	matched, err := regexp.MatchString(`()^[\d+\-*/().]+$`, expression)
 	if err != nil || !matched {
 		err = fmt.Errorf("Incorrect expression")
 	}
@@ -62,7 +61,7 @@ func ArrayNotation(expression string) ([]string, error) {
 
 	// delete "" on end
 	if ArrayOperation[len(ArrayOperation)-1] == "" {
-		ArrayOperation = ArrayOperation[: len(ArrayOperation)-1]
+		ArrayOperation = ArrayOperation[:len(ArrayOperation)-1]
 	}
 
 	return ArrayOperation, Error
@@ -104,7 +103,6 @@ func PostfixNotationArr(expression string) ([]string, error) {
 	NotationArr, Error = ArrayNotation(expression)
 	var Result []string
 
-
 	var NumbersCount int = 0
 	var OperationsCount int = 0
 	var BracketCount int = 0
@@ -117,13 +115,13 @@ func PostfixNotationArr(expression string) ([]string, error) {
 		for _, Symbol := range NotationArr {
 			PriorityIndex = Priority(Symbol)
 			if PriorityIndex == 0 {
-				Result = append(Result, Symbol)	
+				Result = append(Result, Symbol)
 				NumbersCount++
 			} else if PriorityIndex == 5 {
-				StackOperations = StackOperations.Push(Symbol);
+				StackOperations = StackOperations.Push(Symbol)
 				BracketCount++
 			} else if PriorityIndex == 4 {
-				for ; len(StackOperations) > 0 && StackOperations.Get() != "(" ; {
+				for len(StackOperations) > 0 && StackOperations.Get() != "(" {
 					StackOperations, Operation = StackOperations.Pop()
 					Result = append(Result, Operation)
 				}
@@ -134,24 +132,24 @@ func PostfixNotationArr(expression string) ([]string, error) {
 				if len(StackOperations) == 0 {
 					StackOperations = StackOperations.Push(Symbol)
 				} else if PriorityIndex < Priority(StackOperations.Get()) && StackOperations.Get() != "(" {
-					for ;len(StackOperations) > 0 && Priority(StackOperations.Get()) >= PriorityIndex; {						
+					for len(StackOperations) > 0 && Priority(StackOperations.Get()) >= PriorityIndex {
 						StackOperations, Operation = StackOperations.Pop()
 						Result = append(Result, Operation)
 					}
-					StackOperations = StackOperations.Push(Symbol) 
+					StackOperations = StackOperations.Push(Symbol)
 				} else {
 					StackOperations = StackOperations.Push(Symbol)
 				}
 			}
 		}
 
-		for ;len(StackOperations)>0; {
+		for len(StackOperations) > 0 {
 			StackOperations, Operation = StackOperations.Pop()
 			Result = append(Result, Operation)
 		}
 	}
 
-	if NumbersCount != OperationsCount + 1 || BracketCount != 0 {
+	if NumbersCount != OperationsCount+1 || BracketCount != 0 {
 		Error = errors.New("incorrect equation")
 		Result = []string{}
 	}
@@ -159,7 +157,7 @@ func PostfixNotationArr(expression string) ([]string, error) {
 	return Result, Error
 }
 
-//calculate value from postfix notion
+// calculate value from postfix notion
 func CalcFromPostfix(PostfixArr []string) (float64, error) {
 	var err error
 	var Result float64 = 0
@@ -169,43 +167,43 @@ func CalcFromPostfix(PostfixArr []string) (float64, error) {
 
 	for _, element := range PostfixArr {
 		if Priority(element) == 0 {
-			StackNumbers = StackNumbers.Push(element);
+			StackNumbers = StackNumbers.Push(element)
 		} else {
 			StackNumbers, Temp = StackNumbers.Pop()
-			Number1, _ = strconv.ParseFloat(Temp,64)
+			Number1, _ = strconv.ParseFloat(Temp, 64)
 			StackNumbers, Temp = StackNumbers.Pop()
-			Number2, _ = strconv.ParseFloat(Temp,64)
+			Number2, _ = strconv.ParseFloat(Temp, 64)
 			switch element {
-				case "+":
-					StackNumbers = StackNumbers.Push(fmt.Sprintf("%f", Number1+Number2))
-					break
-				case "-":
-					StackNumbers = StackNumbers.Push(fmt.Sprintf("%f", Number2-Number1))
-					break
-				case "*":
-					StackNumbers =StackNumbers.Push(fmt.Sprintf("%f", Number1*Number2))
-					break
-				case "/":
-					StackNumbers =StackNumbers.Push(fmt.Sprintf("%f", Number2/Number1))
-					break
-				}
+			case "+":
+				StackNumbers = StackNumbers.Push(fmt.Sprintf("%f", Number1+Number2))
+				break
+			case "-":
+				StackNumbers = StackNumbers.Push(fmt.Sprintf("%f", Number2-Number1))
+				break
+			case "*":
+				StackNumbers = StackNumbers.Push(fmt.Sprintf("%f", Number1*Number2))
+				break
+			case "/":
+				StackNumbers = StackNumbers.Push(fmt.Sprintf("%f", Number2/Number1))
+				break
+			}
 		}
 	}
-	Result, err = strconv.ParseFloat(StackNumbers[0],64)
-	return Result, err;
+	Result, err = strconv.ParseFloat(StackNumbers[0], 64)
+	return Result, err
 }
 
 // main function for calculate
 func Calc(expression string) (float64, error) {
 	var Result float64 = 0
-	var PostfixArr []string 
-	var Error error;
+	var PostfixArr []string
+	var Error error
 	Error = CheckExpression(expression)
 
-	if (Error == nil) {
+	if Error == nil {
 		PostfixArr, Error = PostfixNotationArr(expression)
 	}
-	if (Error == nil) {
+	if Error == nil {
 		Result, Error = CalcFromPostfix(PostfixArr)
 	}
 
